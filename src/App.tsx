@@ -47,6 +47,7 @@ function App() {
 
   const deleteTask = (id: number) => {
     setTasks((currentTasks) => currentTasks.filter((task) => task.id !== id))
+    setEditingTaskId((currentId) => (currentId === id ? null : currentId))
   }
 
   const editTask = (id: number, description: string) => {

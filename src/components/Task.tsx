@@ -1,4 +1,51 @@
+import { useRef, useState } from 'react'
 import type { TaskData } from '../types'
+
+type TaskEditInputProps = {
+  initialValue: string
+  onSave: (value: string) => void
+  onCancel: () => void
+}
+
+function TaskEditInput({ initialValue, onSave, onCancel }: TaskEditInputProps) {
+  const [value, setValue] = useState(initialValue)
+  const isCancelledRef = useRef(false)
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      const trimmed = value.trim()
+      if (trimmed) {
+        onSave(trimmed)
+      } else {
+        onCancel()
+      }
+    } else if (event.key === 'Escape') {
+      isCancelledRef.current = true
+      onCancel()
+    }
+  }
+
+  const handleBlur = () => {
+    if (isCancelledRef.current) return
+    const trimmed = value.trim()
+    if (trimmed) {
+      onSave(trimmed)
+    } else {
+      onCancel()
+    }
+  }
+
+  return (
+    <input
+      className="edit"
+      value={value}
+      autoFocus
+      onChange={(event) => setValue(event.target.value)}
+      onKeyDown={handleKeyDown}
+      onBlur={handleBlur}
+    />
+  )
+}
 
 type TaskProps = {
   task: TaskData
@@ -31,6 +78,7 @@ function Task({
           type="checkbox"
           checked={task.completed}
           onChange={() => onToggle(task.id)}
+          aria-label={`Mark "${task.description}" as ${task.completed ? 'active' : 'completed'}`}
         />
         <label>
           <span className="description">{task.description}</span>
@@ -38,7 +86,7 @@ function Task({
         <button
           className="icon icon-edit"
           type="button"
-          aria-label="Edit task"
+          aria-label={`Edit task "${task.description}"`}
           onClick={() => onEditStart(task.id)}
         >
           ✎
@@ -46,22 +94,17 @@ function Task({
         <button
           className="icon icon-destroy"
           type="button"
-          aria-label="Delete task"
+          aria-label={`Delete task "${task.description}"`}
           onClick={() => onDelete(task.id)}
         >
           ×
         </button>
       </div>
       {isEditing && (
-        <input
-          className="edit"
-          defaultValue={task.description}
-          autoFocus
-          onBlur={(event) => onEditSave(task.id, event.currentTarget.value)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') event.currentTarget.blur()
-            if (event.key === 'Escape') onEditCancel()
-          }}
+        <TaskEditInput
+          initialValue={task.description}
+          onSave={(description) => onEditSave(task.id, description)}
+          onCancel={onEditCancel}
         />
       )}
     </li>
