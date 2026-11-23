@@ -2,7 +2,7 @@ import { useState } from 'react'
 import Footer from './components/Footer'
 import NewTaskForm from './components/NewTaskForm'
 import TaskList from './components/TaskList'
-import type { TaskData } from './types'
+import type { TaskData, TaskFilter } from './types'
 import './App.css'
 
 const initialTasks: TaskData[] = [
@@ -10,13 +10,13 @@ const initialTasks: TaskData[] = [
     id: 1,
     description: 'Completed task',
     completed: true,
-    createdAt: new Date(),
+    createdAt: new Date(Date.now() - 17 * 1000),
   },
   {
     id: 2,
     description: 'Editing task',
     completed: false,
-    createdAt: new Date(),
+    createdAt: new Date(Date.now() - 5 * 60 * 1000),
   },
   {
     id: 3,
@@ -29,6 +29,7 @@ const initialTasks: TaskData[] = [
 function App() {
   const [tasks, setTasks] = useState(initialTasks)
   const [editingTaskId, setEditingTaskId] = useState<number | null>(null)
+  const [filter, setFilter] = useState<TaskFilter>('all')
 
   const addTask = (description: string) => {
     setTasks((currentTasks) => [
@@ -64,6 +65,20 @@ function App() {
     setEditingTaskId(null)
   }
 
+  const clearCompleted = () => {
+    setTasks((currentTasks) => currentTasks.filter((task) => !task.completed))
+    setEditingTaskId((currentId) => {
+      const editingTask = tasks.find((task) => task.id === currentId)
+      return editingTask?.completed ? null : currentId
+    })
+  }
+
+  const filteredTasks = tasks.filter((task) => {
+    if (filter === 'active') return !task.completed
+    if (filter === 'completed') return task.completed
+    return true
+  })
+
   return (
     <section className="todoapp">
       <header className="header">
@@ -72,7 +87,7 @@ function App() {
       </header>
       <section className="main">
         <TaskList
-          tasks={tasks}
+          tasks={filteredTasks}
           editingTaskId={editingTaskId}
           onTaskToggle={toggleTask}
           onTaskDelete={deleteTask}
@@ -80,7 +95,12 @@ function App() {
           onTaskEditSave={editTask}
           onTaskEditCancel={() => setEditingTaskId(null)}
         />
-        <Footer tasks={tasks} />
+        <Footer
+          tasks={tasks}
+          filter={filter}
+          onFilterChange={setFilter}
+          onClearCompleted={clearCompleted}
+        />
       </section>
     </section>
   )

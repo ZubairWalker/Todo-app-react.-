@@ -1,12 +1,30 @@
-const filters = ['All', 'Active', 'Completed']
+import type { TaskFilter } from '../types'
 
-function TasksFilter() {
+type TasksFilterProps = {
+  filter?: TaskFilter
+  onFilterChange?: (filter: TaskFilter) => void
+}
+
+const filterOptions: { label: string; value: TaskFilter }[] = [
+  { label: 'All', value: 'all' },
+  { label: 'Active', value: 'active' },
+  { label: 'Completed', value: 'completed' },
+]
+
+function TasksFilter({
+  filter = 'all',
+  onFilterChange = () => {},
+}: TasksFilterProps) {
   return (
     <ul className="filters">
-      {filters.map((filter) => (
-        <li key={filter}>
-          <button className={filter === 'All' ? 'selected' : ''} type="button">
-            {filter}
+      {filterOptions.map(({ label, value }) => (
+        <li key={value}>
+          <button
+            className={filter === value ? 'selected' : ''}
+            type="button"
+            onClick={() => onFilterChange(value)}
+          >
+            {label}
           </button>
         </li>
       ))}

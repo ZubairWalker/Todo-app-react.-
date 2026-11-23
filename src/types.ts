@@ -4,3 +4,5 @@ export type TaskData = {
   completed: boolean
   createdAt: Date
 }
+
+export type TaskFilter = 'all' | 'active' | 'completed'

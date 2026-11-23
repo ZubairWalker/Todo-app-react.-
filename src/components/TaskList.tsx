@@ -2,23 +2,23 @@ import Task from './Task'
 import type { TaskData } from '../types'
 
 type TaskListProps = {
-  tasks: TaskData[]
-  editingTaskId: number | null
-  onTaskToggle: (id: number) => void
-  onTaskDelete: (id: number) => void
-  onTaskEditStart: (id: number) => void
-  onTaskEditSave: (id: number, description: string) => void
-  onTaskEditCancel: () => void
+  tasks?: TaskData[]
+  editingTaskId?: number | null
+  onTaskToggle?: (id: number) => void
+  onTaskDelete?: (id: number) => void
+  onTaskEditStart?: (id: number) => void
+  onTaskEditSave?: (id: number, description: string) => void
+  onTaskEditCancel?: () => void
 }
 
 function TaskList({
-  tasks,
-  editingTaskId,
-  onTaskToggle,
-  onTaskDelete,
-  onTaskEditStart,
-  onTaskEditSave,
-  onTaskEditCancel,
+  tasks = [],
+  editingTaskId = null,
+  onTaskToggle = () => {},
+  onTaskDelete = () => {},
+  onTaskEditStart = () => {},
+  onTaskEditSave = () => {},
+  onTaskEditCancel = () => {},
 }: TaskListProps) {
   return (
     <ul className="todo-list">

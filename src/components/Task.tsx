@@ -1,13 +1,18 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { formatDistanceToNow } from 'date-fns'
 import type { TaskData } from '../types'
 
 type TaskEditInputProps = {
-  initialValue: string
-  onSave: (value: string) => void
-  onCancel: () => void
+  initialValue?: string
+  onSave?: (value: string) => void
+  onCancel?: () => void
 }
 
-function TaskEditInput({ initialValue, onSave, onCancel }: TaskEditInputProps) {
+function TaskEditInput({
+  initialValue = '',
+  onSave = () => {},
+  onCancel = () => {},
+}: TaskEditInputProps) {
   const [value, setValue] = useState(initialValue)
   const isCancelledRef = useRef(false)
 
@@ -43,6 +48,7 @@ function TaskEditInput({ initialValue, onSave, onCancel }: TaskEditInputProps) {
       onChange={(event) => setValue(event.target.value)}
       onKeyDown={handleKeyDown}
       onBlur={handleBlur}
+      aria-label="Edit task description"
     />
   )
 }
@@ -50,38 +56,65 @@ function TaskEditInput({ initialValue, onSave, onCancel }: TaskEditInputProps) {
 type TaskProps = {
   task: TaskData
   isEditing?: boolean
-  onToggle: (id: number) => void
-  onDelete: (id: number) => void
-  onEditStart: (id: number) => void
-  onEditSave: (id: number, description: string) => void
-  onEditCancel: () => void
+  onToggle?: (id: number) => void
+  onDelete?: (id: number) => void
+  onEditStart?: (id: number) => void
+  onEditSave?: (id: number, description: string) => void
+  onEditCancel?: () => void
 }
 
 function Task({
   task,
   isEditing = false,
-  onToggle,
-  onDelete,
-  onEditStart,
-  onEditSave,
-  onEditCancel,
+  onToggle = () => {},
+  onDelete = () => {},
+  onEditStart = () => {},
+  onEditSave = () => {},
+  onEditCancel = () => {},
 }: TaskProps) {
+  const [timeAgo, setTimeAgo] = useState(() =>
+    formatDistanceToNow(task.createdAt, {
+      includeSeconds: true,
+      addSuffix: true,
+    }),
+  )
+
+  useEffect(() => {
+    const updateTime = () => {
+      setTimeAgo(
+        formatDistanceToNow(task.createdAt, {
+          includeSeconds: true,
+          addSuffix: true,
+        }),
+      )
+    }
+
+    updateTime()
+    const intervalId = setInterval(updateTime, 1000)
+
+    return () => clearInterval(intervalId)
+  }, [task.createdAt])
+
   const className = [task.completed && 'completed', isEditing && 'editing']
     .filter(Boolean)
     .join(' ')
+
+  const toggleInputId = `task-toggle-${task.id}`
 
   return (
     <li className={className}>
       <div className="view">
         <input
+          id={toggleInputId}
           className="toggle"
           type="checkbox"
           checked={task.completed}
           onChange={() => onToggle(task.id)}
           aria-label={`Mark "${task.description}" as ${task.completed ? 'active' : 'completed'}`}
         />
-        <label>
+        <label htmlFor={toggleInputId}>
           <span className="description">{task.description}</span>
+          <span className="created">{`created ${timeAgo}`}</span>
         </label>
         <button
           className="icon icon-edit"
